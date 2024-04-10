@@ -16,8 +16,8 @@ source('getState.r')
 
 # Generate the species richness matrix (e.g. 7 species, 20 sites)
 
-init_site <- 4
-init_species <- 10
+init_site <- 7
+init_species <- 20
 M <- round(matrix(nrow=init_site, ncol=init_species, data=runif(init_site*init_species,0,1)))
 
 # Generate the transition and reward matrix
