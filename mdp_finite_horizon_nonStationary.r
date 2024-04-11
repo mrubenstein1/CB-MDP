@@ -35,9 +35,9 @@ if (N < 1) {
 	}
 	
 	for (n in 0:(N-1)) {
-	  t <-N-n
-	  PRt <- mdp_computePR(P[,,,t],R[,,t]) # R(SxAxT)
-	  Pt <- P[,,,t] # to check
+	  t1 <-N-n
+	  PRt <- mdp_computePR(P[,,,t1],R[,,t1]) # R(SxAxT)
+	  Pt <- P[,,,t1] # to check
 		bellman <- mdp_bellman_operator(Pt,PRt,discount,V[,N-n+1]) # check
 		W <- bellman[[1]]
 		X <- bellman[[2]]
