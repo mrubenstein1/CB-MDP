@@ -17,27 +17,41 @@ source('getSite.r')
 source('binvec2dec.r')
 source('getState.r')
 
-# Generate the species richness matrix (e.g. 7 species, 20 sites)
 
-init_site <- 6
-time_step <- 7
+## Specification of the non stationary PPR problem
+# How many sites and time steps
+init_site <- 3
+time_step <- 3 # last step is time_step+1
+
+# M is the time dependent benefit matrix Site x time_step
+# random generation or provide data
 M <- round(matrix(nrow=init_site, ncol=time_step, data=runif(init_site*time_step,1,5)))
+
+# term is a vector representing the terminal benefit (reward) at each site (time_step+1) 
 term <- round(matrix(runif(init_site, 1, 5), nrow = init_site, ncol = 1))
+
+# Pj is the time dependent matrix representing the probability of a site being converted at every time step 
 Pj <- round(array(runif(init_site*time_step, min=0, max=0.4), c(init_site,time_step))*100)/100
 
+
+
+## Build the MDP
 # Generate the transition and reward matrix
 PR <- mdp_example_PPR_non_stationary(M,term,Pj)
-P <- PR$P
-R <- PR$R
-h <- PR$RT
+P <- PR$P   # Probability transitions P(SxSxAxT)
+R <- PR$R   # Reward R(SxAxT)
+h <- PR$RT  # terminal Reward R(S)
 
-# Solve the reserve design problem
+## Solve the MDP
+# Solve the PPR problem
 results <- mdp_finite_horizon_nonStationary(P, R, 0.96, time_step, h);
 V <- results$V
 policy <- results$policy
 print(policy)
 print(V)
 
-# Explore solution - to do
+## Explore solution
 sim <- explore_solution_PPR(numeric(init_site), policy, M, P, R,h)
+sim$Treward
+sim$Tsites
 
