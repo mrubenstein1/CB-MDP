@@ -9,3 +9,9 @@ Run PPR_nonStationary_example.r
 
 
 When using getState it returns state id from index 0, to use the state to check the action in policy, requires +1 as MDP states start at 1 not 0.
+> x= c(2,1,0)
+> getState(x)
+[1] 5
+> policy[6,2]
+[1] 3
+> 
