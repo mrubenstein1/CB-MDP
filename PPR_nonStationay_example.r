@@ -18,8 +18,12 @@ source('binvec2dec.r')
 source('getState.r')
 
 toyPB = TRUE
-
-
+# CAREFULL when using getState(), the id of the state returned should get +1 (starts at 0)
+# > x= c(2,1,0)
+# > getState(x)
+# [1] 5
+# > policy[6,2]
+# [1] 3
 if (toyPB==F){
   ## Specification of the non stationary PPR problem
   # How many sites and time steps
