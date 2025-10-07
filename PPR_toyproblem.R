@@ -3,7 +3,7 @@
 # PPR_toyproblem.R
 
 # translation of the xlsx example
-init_site <- 3
+init_site <- 4
 time_step <- 2 # last step is time_step+1
 
 # M is the time dependent benefit matrix Site x time_step
