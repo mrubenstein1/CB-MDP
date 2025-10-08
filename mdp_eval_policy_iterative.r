@@ -83,7 +83,7 @@ if ( discount <= 0 | discount > 1 ) {
 	is_done <- F
 	
 	while (!is_done) {
-		iter <- iter + 1
+		iter <- iter +1
 		Vprev <- Vpolicy
 		Vpolicy <- PRpolicy + discount * Ppolicy %*% Vprev
 		variation <- max(abs(Vpolicy - Vprev))
