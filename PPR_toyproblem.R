@@ -1,3 +1,5 @@
+#MAIN BRANCH: SAME INITIAL INPUTS & PROBLEM STRUCTURE AS IADINE'S ORIGINAL ###
+
 ## Specification of the non stationary PPR problem
 # How many sites and time steps
 # PPR_toyproblem.R
