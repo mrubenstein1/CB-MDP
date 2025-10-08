@@ -62,3 +62,19 @@ sim <- explore_solution_PPR(numeric(init_site), policy, M, P, R,h)
 sim$Treward
 sim$Tsites
 
+# Run the simulation 1000 times and collect sim$Treward from each run
+results <- lapply(1:1000, function(i) {
+  sim <- explore_solution_PPR(numeric(init_site), policy, M, P, R, h)
+  sim$Treward
+})
+
+#Combine all Treward into a matrix
+results <- do.call(rbind, results)
+
+#Only keep terminal reward
+results <- results[,6]
+mean(results)
+hist(results)
+boxplot(results)
+
+
