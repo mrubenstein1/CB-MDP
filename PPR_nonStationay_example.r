@@ -115,3 +115,5 @@ results_sum <- results_sum %>%
     sd_r = if_else(scenario == "s1_noniterative", round(sd(results),2), sd_r)
   )
 
+print(results_sum)
+write.csv(results_sum, "results_sum.csv")

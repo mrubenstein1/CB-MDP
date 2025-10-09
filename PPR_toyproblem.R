@@ -1,8 +1,7 @@
-#MAIN BRANCH: SAME INITIAL INPUTS & PROBLEM STRUCTURE AS IADINE'S ORIGINAL ###
+#SCENARIO 1: CONSTANT BENEFIT & TRANSITION PROBABILITY MATRIX ###
 
-## Specification of the non stationary PPR problem
-# How many sites and time steps
-# PPR_toyproblem.R
+#EVALUATE WITH BOTH ITERATIVE AND NON-ITERATIVE POLICY ARGUMENT. These should provide similar results
+
 
 # translation of the xlsx example
 init_site <- 6
