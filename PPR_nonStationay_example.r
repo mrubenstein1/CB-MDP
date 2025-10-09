@@ -6,6 +6,7 @@ rm(list=ls()) # remove existing variables
 
 library(MDPtoolbox)
 library(graphics)
+library(dplyr)
 source('mdp_finite_horizon_nonStationary.r')
 
 source('mdp_example_PPR_non_stationary.r')
@@ -76,5 +77,41 @@ results <- results[,6]
 mean(results)
 hist(results)
 boxplot(results)
+sd(results)
 
+#Save relevant output to results dataframe
+results_sum <- data.frame(scenario=c("s1_iterative","s1_noniterative","s2","s3"), mean_r= NA, sd_r=NA)
+
+results_sum <- results_sum %>% 
+  mutate(
+  mean_r = if_else(scenario == "s1_iterative", round(mean(results),2), mean_r),
+  sd_r = if_else(scenario == "s1_iterative", round(sd(results),2), sd_r)
+)
+
+
+#Repeat, but change "mdp_eval_policy iterative" to iter=1
+  #this should be scenario 1, non-iterative
+
+#Repeat simulation, as above
+    results <- lapply(1:1000, function(i) {
+      sim <- explore_solution_PPR(numeric(init_site), policy, M, P, R, h)
+      sim$Treward
+    })
+    
+    #Combine all Treward into a matrix
+    results <- do.call(rbind, results)
+    
+    #Only keep terminal reward
+    results <- results[,6]
+    mean(results)
+    hist(results)
+    boxplot(results)
+    sd(results)
+
+#save into previous results matrix
+results_sum <- results_sum %>% 
+  mutate(
+    mean_r = if_else(scenario == "s1_noniterative", round(mean(results),2), mean_r),
+    sd_r = if_else(scenario == "s1_noniterative", round(sd(results),2), sd_r)
+  )
 
