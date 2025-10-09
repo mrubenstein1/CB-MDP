@@ -73,7 +73,8 @@ results <- lapply(1:1000, function(i) {
 results <- do.call(rbind, results)
 
 #Only keep terminal reward
-results <- results[,6]
+n <- ncol(results) 
+results <- results[,n]
 mean(results)
 hist(results)
 boxplot(results)
@@ -102,7 +103,8 @@ results_sum <- results_sum %>%
     results <- do.call(rbind, results)
     
     #Only keep terminal reward
-    results <- results[,6]
+    n <- ncol(results) 
+    results <- results[,n]
     mean(results)
     hist(results)
     boxplot(results)
