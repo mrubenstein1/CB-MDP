@@ -85,37 +85,44 @@ results_sum <- data.frame(scenario=c("s1_iterative","s1_noniterative","s2","s3")
 
 results_sum <- results_sum %>% 
   mutate(
-  mean_r = if_else(scenario == "s1_iterative", round(mean(results),2), mean_r),
-  sd_r = if_else(scenario == "s1_iterative", round(sd(results),2), sd_r)
+  mean_r = if_else(scenario == "s2", round(mean(results),2), mean_r),
+  sd_r = if_else(scenario == "s2", round(sd(results),2), sd_r)
 )
 
 
-#Repeat, but change "mdp_eval_policy iterative" to iter=1
-  #this should be scenario 1, non-iterative
+print(results_sum)
+write.csv(results_sum, "results_sum_scen2.csv")
 
-#Repeat simulation, as above
-    results <- lapply(1:1000, function(i) {
-      sim <- explore_solution_PPR(numeric(init_site), policy, M, P, R, h)
-      sim$Treward
-    })
-    
-    #Combine all Treward into a matrix
-    results <- do.call(rbind, results)
-    
-    #Only keep terminal reward
-    n <- ncol(results) 
-    results <- results[,n]
-    mean(results)
-    hist(results)
-    boxplot(results)
-    sd(results)
 
-#save into previous results matrix
+
+########### RE RUN FOR SCENARIO 3: VARIABLE MATRICES WITH ITERATIVE POLICY
+
+# Run the simulation 1000 times and collect sim$Treward from each run
+results <- lapply(1:1000, function(i) {
+  sim <- explore_solution_PPR(numeric(init_site), policy, M, P, R, h)
+  sim$Treward
+})
+
+#Combine all Treward into a matrix
+results <- do.call(rbind, results)
+
+#Only keep terminal reward
+n <- ncol(results) 
+results <- results[,n]
+mean(results)
+hist(results)
+boxplot(results)
+sd(results)
+
+#Save relevant output to results dataframe
 results_sum <- results_sum %>% 
   mutate(
-    mean_r = if_else(scenario == "s1_noniterative", round(mean(results),2), mean_r),
-    sd_r = if_else(scenario == "s1_noniterative", round(sd(results),2), sd_r)
+    mean_r = if_else(scenario == "s3", round(mean(results),2), mean_r),
+    sd_r = if_else(scenario == "s3", round(sd(results),2), sd_r)
+    
   )
 
+
 print(results_sum)
-write.csv(results_sum, "results_sum.csv")
+write.csv(results_sum, "results_sum_scen2.csv")
+
