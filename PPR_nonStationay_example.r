@@ -10,6 +10,7 @@ library(dplyr)
 source('mdp_finite_horizon_nonStationary.r')
 
 source('mdp_example_PPR_non_stationary.r')
+source('mdp_myopic_policy_non_Stationary.r')
 
 source('explore_solution_PPR.r')
 
@@ -43,179 +44,117 @@ if (toyPB==F){
 } else {source('PPR_toyproblem.r')}
 
 ##################################################
-#       S1: BUILD & SOLVE MDP    #
+#      BUILD & SOLVE MDP    #
 #################################################
-
-# ---- S1 ----
 
 ## Build the MDP
 # Generate the transition and reward matrix
-PR <- mdp_example_PPR_non_stationary(M_s1,term_s1,Pj_s1)
+PR <- mdp_example_PPR_non_stationary(M,term,Pj)
 P <- PR$P   # Probability transitions P(SxSxAxT)
 R <- PR$R   # Reward R(SxAxT)
 h <- PR$RT  # terminal Reward R(S)
 
 ## Solve the MDP
-# Solve the PPR problem
-results <- mdp_finite_horizon_nonStationary(P, R, 1, time_step, h);
-V <- results$V
-policy <- results$policy
+results_optimal <- mdp_finite_horizon_nonStationary(P, R, 1, time_step, h)
+policy_optimal <- results_optimal$policy; head(policy_optimal)
+
 
 ## Explore solution
-sim <- explore_solution_PPR(numeric(init_site), policy, M_s1, P, R,h)
+sim <- explore_solution_PPR(numeric(init_site), policy_optimal, M, P, R,h)
 sim$Treward
 sim$Tsites
 
 # Run the simulation 1000 times and collect sim$Treward from each run
-results_s1 <- lapply(1:1000, function(i) {
-  sim <- explore_solution_PPR(numeric(init_site), policy, M_s1, P, R, h)
+results_optimal <- lapply(1:1000, function(i) {
+  sim <- explore_solution_PPR(numeric(init_site), policy_optimal, M, P, R, h)
   sim$Treward
 })
 
-#Combine all Treward into a matrix 
-results_s1 <- do.call(rbind, results_s1)
-    #Only keep terminal reward
-    n <- ncol(results_s1) 
-    results_s1 <- results_s1[,n]
-    
-    #visualize
-    mean(results_s1)
-    hist(results_s1)
-    boxplot(results_s1)
-    sd(results_s1)
-    
-    #save into dataframe
-    results_sum <- data.frame(scenario=c("s1","s2","s3"), mean_r= NA, sd_r=NA)
-    results_sum <- results_sum %>% 
-      mutate(
-        mean_r = if_else(scenario == "s1", round(mean(results_s1),2), mean_r),
-        sd_r = if_else(scenario == "s1", round(sd(results_s1),2), sd_r)
-      )
-    print(results_sum)
-
-    
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-# ---- S2 ----
-    
-    ## Build the MDP
-    # Generate the transition and reward matrix
-    PR <- mdp_example_PPR_non_stationary(M_s2,term_s2,Pj_s2)
-    P <- PR$P   # Probability transitions P(SxSxAxT)
-    R <- PR$R   # Reward R(SxAxT)
-    h <- PR$RT  # terminal Reward R(S)
-    
-    ## Solve the MDP
-    # Solve the PPR problem
-    results <- mdp_finite_horizon_nonStationary(P, R, 1, time_step, h);
-    V <- results$V
-    policy <- results$policy
-    
-    ## Explore solution
-    sim <- explore_solution_PPR(numeric(init_site), policy, M_s2, P, R,h)
-    sim$Treward
-    sim$Tsites
-    
-    # Run the simulation 1000 times and collect sim$Treward from each run
-    results_s2 <- lapply(1:1000, function(i) {
-      sim <- explore_solution_PPR(numeric(init_site), policy, M_s2, P, R, h)
-      sim$Treward
-    })
-    
     #Combine all Treward into a matrix 
-    results_s2 <- do.call(rbind, results_s2)
-    #Only keep terminal reward
-    n <- ncol(results_s2) 
-    results_s2 <- results_s2[,n]
-    
-    #visualize
-    mean(results_s2)
-    hist(results_s2)
-    boxplot(results_s2)
-    sd(results_s2)
-    
-    #save into dataframe
-    results_sum <- results_sum %>% 
-      mutate(
-        mean_r = if_else(scenario == "s2", round(mean(results_s2),2), mean_r),
-        sd_r = if_else(scenario == "s2", round(sd(results_s2),2), sd_r)
-      )
-    print(results_sum)
-    
-# ---- S3 ----
-    
-    ## Build the MDP
-    # Generate the transition and reward matrix
-    PR <- mdp_example_PPR_non_stationary(M_s3,term_s3,Pj_s3)
-    P <- PR$P   # Probability transitions P(SxSxAxT)
-    R <- PR$R   # Reward R(SxAxT)
-    h <- PR$RT  # terminal Reward R(S)
-    
-    ## Solve the MDP
-    # Solve the PPR problem
-    results <- mdp_finite_horizon_nonStationary(P, R, 1, time_step, h);
-    V <- results$V
-    policy <- results$policy
-    
-    ## Explore solution
-    sim <- explore_solution_PPR(numeric(init_site), policy, M_s3, P, R,h)
-    sim$Treward
-    sim$Tsites
-    
-    # Run the simulation 1000 times and collect sim$Treward from each run
-    results_s3 <- lapply(1:1000, function(i) {
-      sim <- explore_solution_PPR(numeric(init_site), policy, M_s3, P, R, h)
-      sim$Treward
-    })
-    
-    #Combine all Treward into a matrix 
-    results_s3 <- do.call(rbind, results_s3)
-    #Only keep terminal reward
-    n <- ncol(results_s3) 
-    results_s3 <- results_s3[,n]
-    
-    #visualize
-    mean(results_s3)
-    hist(results_s3)
-    boxplot(results_s3)
-    sd(results_s3)
-    
-    #save into dataframe
-    results_sum <- results_sum %>% 
-      mutate(
-        mean_r = if_else(scenario == "s3", round(mean(results_s3),2), mean_r),
-        sd_r = if_else(scenario == "s3", round(sd(results_s3),2), sd_r)
-      )
-    print(results_sum)
-    
-    
-    
-    
-    
-    
-    
+    results_optimal <- do.call(rbind, results_optimal)
+        #Only keep terminal reward
+        n <- ncol(results_optimal) 
+        results_optimal <- results_optimal[,n]
+        
+        #visualize
+        mean(results_optimal)
+        hist(results_optimal)
+        boxplot(results_optimal)
+        sd(results_optimal)
+
+##################################################
+#      BUILD & SOLVE Myopic Model    #
+#################################################
+        
+
+## Solve the MDP with the myopic, greedy solver
+results_myopic <- mdp_myopic_policy_nonStationary(P, R, 1, time_step, h) # Note: P and discount are ignored inside
+policy_myopic <- results_myopic$policy; head(policy_myopic)
 
 
+# Run the simulation 1000 times and collect sim$Treward from each run   
+results_myopic <- lapply(1:1000, function(i) {
+sim <- explore_solution_PPR(numeric(init_site), policy_myopic, M, P, R, h)
+sim$Treward
+  })
+    
+  #Combine all Treward into a matrix 
+    results_myopic <- do.call(rbind, results_myopic)
+    n <- ncol(results_myopic) 
+    results_myopic <- results_myopic[,n]  
+    
+    #visualize
+    mean(results_myopic)
+    hist(results_myopic)
+    boxplot(results_myopic)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+########### COMPARE AND STORE RESULTS #########
+# Visualize and compare
+cat("---- Scenario S1 Results ----\n")
+cat("Optimal Mean Reward:", mean(results_optimal), " | SD:", sd(results_optimal), "\n")
+cat("Myopic Mean Reward: ", mean(results_myopic), " | SD:", sd(results_myopic), "\n")
+par(mfrow=c(1,2))
+hist(results_optimal, main="Optimal Policy Rewards")
+hist(results_myopic, main="Myopic Policy Rewards")
+par(mfrow=c(1,1))
+
+# Save into dataframe
+# We'll add new rows for the myopic scenarios
+results_sum <- data.frame(scenario=c("optimal", "myopic"), 
+                          mean_r= NA, 
+                          sd_r=NA)
+
+results_sum <- results_sum %>% 
+  mutate(
+    mean_r = case_when(
+      scenario == "optimal" ~ round(mean(results_optimal), 2),
+      scenario == "myopic"  ~ round(mean(results_myopic), 2),
+      TRUE ~ mean_r
+    ),
+    sd_r = case_when(
+      scenario == "s1_optimal" ~ round(sd(results_optimal), 2),
+      scenario == "s1_myopic"  ~ round(sd(results_myopic), 2),
+      TRUE ~ sd_r
+    )
+  )
+print(results_sum)
+   
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+  
