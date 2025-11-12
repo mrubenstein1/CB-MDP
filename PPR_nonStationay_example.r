@@ -4,6 +4,11 @@
 
 rm(list=ls()) # remove existing variables
 
+### note on naming convention ###
+  # Available Parcels = 0; benefits are counted
+  # Conserved (Purchased) Parcels = 1 ; benefits are counted
+  # Converted (Lost) Parcels = 2 ; benefits are not counted
+
 library(MDPtoolbox)
 library(graphics)
 library(dplyr)
@@ -89,8 +94,6 @@ sim_runs_myopic <- lapply(1:1000, function(i) {
   sim <- explore_solution_PPR(numeric(init_site), policy_myopic, M, P, R, h)
   sim$Treward
 })
-
-
 
 
 #########################################################
