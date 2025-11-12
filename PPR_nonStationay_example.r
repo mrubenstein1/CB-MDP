@@ -22,6 +22,16 @@ source('getSite.r')
 source('binvec2dec.r')
 source('getState.r')
 
+
+##################################################
+#      CHOOSE SCENARIO TO RUN        #
+##################################################
+#
+# Set this variable to control the input data.
+# Options: "constant" or "variable"
+#
+benefit_scenario <- "constant"
+
 toyPB = TRUE
 # CAREFULL when using getState(), the id of the state returned should get +1 (starts at 0)
 # > x= c(2,1,0)
@@ -106,6 +116,11 @@ policy_fl_myopic <- results_fl_myopic$policy; head(policy_fl_myopic)
 
 
 ## Explore solution
+sim_fl_myopic <- explore_solution_PPR(numeric(init_site), policy_fl_myopic, M, P, R,h)
+sim_fl_myopic$Treward
+sim_fl_myopic$Tsites
+
+# Run the simulation 1000 times and collect sim$Treward from each run
 sim_runs_fl_myopic <- lapply(1:1000, function(i) {
   sim <- explore_solution_PPR(numeric(init_site), policy_fl_myopic, M, P, R, h)
   sim$Treward
@@ -160,4 +175,14 @@ results_sum <- results_sum %>%
       TRUE ~ sd_r
     )
   )
-print(results_sum); write.csv(results_sum, "results_sum.csv")
+print(results_sum)
+
+# --- DYNAMIC OBJECT AND FILE SAVING ---
+
+# 1. Create the dynamic name for both the R object and the CSV file
+dynamic_name <- paste0("results_sum_", benefit_scenario)
+
+# 2. Assign the results_sum dataframe to the new, dynamically named object in the R environment
+assign(dynamic_name, results_sum)
+print(get(dynamic_name))
+write.csv(results_sum, paste0(dynamic_name, ".csv"), row.names = FALSE) #save to csv
