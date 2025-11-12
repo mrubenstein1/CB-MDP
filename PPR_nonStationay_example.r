@@ -128,7 +128,6 @@ sim_runs_fl_myopic <- lapply(1:1000, function(i) {
 
 
 
-
 ########### COMPARE AND STORE RESULTS #########
 
 # --- 1. PROCESS SIMULATION RESULTS ---
@@ -136,6 +135,17 @@ sim_runs_fl_myopic <- lapply(1:1000, function(i) {
 terminal_rewards_optimal <- do.call(rbind, sim_runs_optimal)[, ncol(M) + 1]
 terminal_rewards_greedy <- do.call(rbind, sim_runs_greedy)[, ncol(M) + 1]
 terminal_rewards_fl_myopic <- do.call(rbind, sim_runs_fl_myopic)[, ncol(M) + 1]
+
+# --- 2. PERFORM STATISTICAL TESTS ---
+# We will use Welch's two-sample t-test, which is robust and does not assume
+# equal variances between the two groups being compared.
+
+# Compare the Greedy model's results against the Optimal model's results
+ttest_vs_greedy <- t.test(terminal_rewards_optimal, terminal_rewards_greedy)
+
+# Compare the Forward-Looking Myopic model's results against the Optimal model
+ttest_vs_fl_myopic <- t.test(terminal_rewards_optimal, terminal_rewards_fl_myopic)
+
 
 
 # --- 2. CREATE AND SAVE THE RAW DATA TABLE ---
@@ -156,26 +166,75 @@ cat("\nRaw simulation data saved to:", raw_output_filename, "\n")
 
 
 # --- 3. CREATE AND SAVE THE SUMMARY TABLE (as before) ---
-# Create the summary dataframe
-results_sum <- raw_results_table %>%
+
+summary_stats <- raw_results_table %>%
   group_by(Model) %>%
   summarise(
-    mean_r = round(mean(TerminalReward), 2),
-    sd_r = round(sd(TerminalReward), 2)
+    mean_r = mean(TerminalReward),
+    sd_r = sd(TerminalReward)
+  )
+
+# Get the mean of the optimal model, which will be our baseline for comparison
+mean_optimal <- summary_stats$mean_r[summary_stats$Model == "optimal"]
+
+# Now, build the final table, adding the difference and p-value
+results_sum_enhanced <- summary_stats %>%
+  mutate(
+    # Add a column for the difference from the optimal model's mean reward
+    DifferenceFromOptimal = round(mean_optimal - mean_r, 2),
+    
+    # Add a column for the p-value from the t-test
+    PValue = case_when(
+      Model == "optimal"   ~ NA_real_, # No p-value for comparing to itself
+      Model == "greedy"    ~ ttest_vs_greedy$p.value,
+      Model == "fl_myopic" ~ ttest_vs_fl_myopic$p.value
+    ),
+    
+    # Format the p-value for clean presentation (e.g., showing "< 0.001")
+    Significance = case_when(
+      is.na(PValue) ~ "--",
+      PValue < 0.001 ~ "< 0.001",
+      TRUE ~ as.character(round(PValue, 3))
+    ),
+    
+    # Add the scenario information
+    data_scenario = benefit_scenario
   ) %>%
-  mutate(data_scenario = benefit_scenario) # Add scenario info
+  # Select and reorder columns for the final output
+  select(
+    Model,
+    MeanReward = mean_r,
+    StDev = sd_r,
+    DifferenceFromOptimal,
+    Significance,
+    Scenario = data_scenario
+  )
 
+# Round the numeric columns for a cleaner final table
+results_sum_enhanced <- results_sum_enhanced %>%
+  mutate(across(where(is.numeric), ~ round(., 2)))
+
+
+# --- 5. SAVE AND PRINT THE ENHANCED TABLE ---
 # Define the dynamic name for the summary object and file
-dynamic_name_summary <- paste0("results_sum_", benefit_scenario)
+dynamic_name <- paste0("results_sum_enhanced_", benefit_scenario)
 
-# Assign to a dynamically named object and save to CSV
-assign(dynamic_name_summary, results_sum)
-write.csv(results_sum, paste0(dynamic_name_summary, ".csv"), row.names = FALSE)
-cat("Summary statistics saved to:", paste0(dynamic_name_summary, ".csv"), "\n")
+# Assign to a dynamically named object
+assign(dynamic_name, results_sum_enhanced)
 
-# Print the contents of the newly created summary object
-cat("\n--- Final Summary Table (`", dynamic_name_summary, "`) ---\n", sep="")
-print(get(dynamic_name_summary))
-cat("---------------------------------------------\n")
+# Save the enhanced summary to a CSV file
+write.csv(results_sum_enhanced, paste0(dynamic_name, ".csv"), row.names = FALSE)
+cat("Enhanced summary statistics saved to:", paste0(dynamic_name, ".csv"), "\n")
+
+# Print the contents of the newly created enhanced summary object
+cat("\n--- Final Enhanced Summary Table (`", dynamic_name, "`) ---\n", sep="")
+print(get(dynamic_name))
+cat("----------------------------------------------------------\n")
+
+
+
+
+
+
 
 
