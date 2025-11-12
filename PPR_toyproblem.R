@@ -1,10 +1,13 @@
-# --- CHOOSE SCENARIO INPUTS ---
+# --- BENEFITS: PARCEL VALUES OVER TIME ---
 # This script reads a variable 'benefit_scenario' from the main script
-# to determine which benefit matrix (M) to generate.
+# to determine which benefit matrix (M) to generate. This version defines
+# all time step values at once, according to scenarios, then separates tiem steps 1:5 from the
+# terminal value (term). This is done to align with structure of explore_solution_PPR & other scripts.
 
 # Common parameters for both scenarios
 init_site <- 6
 time_step <- 5 # last step is time_step+1
+full_horizon <- time_step + 1 # Total steps including terminal
 
 ##################################################
 #      DEFINE REWARD & TRANSITION MATRIX         #
@@ -18,31 +21,21 @@ if (benefit_scenario == "constant") {
   
   # --- Scenario 1: CONSTANT BENEFIT ---
   # Each site has a different, but constant, benefit value over time.
-  cat("\n--- Generating input data for CONSTANT benefit scenario ---\n")
-  p1=rep(10, 5) # Site 1 has a constant benefit of 10
-  p2=rep(8, 5)  # Site 2 has a constant benefit of 8
-  p3=rep(7, 5)  # Site 3 has a constant benefit of 7
-  p4=rep(5, 5)  # Site 4 has a constant benefit of 5
-  p5=rep(3, 5)  # Site 5 has a constant benefit of 3
-  p6=rep(1, 5)  # Site 6 has a constant benefit of 1
+  # Benefits are defined for all 6 time steps.
+  p1=rep(10, full_horizon); p2=rep(8, full_horizon); p3=rep(7, full_horizon)
+  p4=rep(5, full_horizon); p5=rep(3, full_horizon); p6=rep(1, full_horizon) 
   
 } else if (benefit_scenario == "variable") {
   
   # --- Scenario 2: VARIABLE BENEFIT ---
-  # Site benefits change over time, creating a challenge for myopic models.
-  cat("\n--- Generating input data for VARIABLE benefit scenario ---\n")
+  # Benefits are defined for all 6 time steps, with the 6th step continuing the trend.
   set.seed(42) 
-  
-  # "The Trap": A very high immediate reward that quickly drops.
-  p1 <- c(20, 5, 2, 1, 0)
-  # "The Sleeper": Starts low but becomes invaluable later.
-  p2 <- c(1, 2, 8, 16, 25)
-  # A stable, average control site.
-  p3 <- rep(8, 5)
-  # Other options to fill out the state space.
-  p4 <- c(5, 6, 7, 6, 5)
-  p5 <- c(10, 9, 8, 7, 6)
-  p6 <- c(3, 3, 3, 3, 3)
+  p1 <- c(20, 5, 2, 1, 0, 0)      # "The Trap" value stays at 0
+  p2 <- c(1, 2, 8, 16, 25, 36)    # "The Sleeper" value continues to accelerate
+  p3 <- rep(8, full_horizon)     # Stable, average control site
+  p4 <- c(5, 6, 7, 6, 5, 4)      # Mid-horizon peak continues its decline
+  p5 <- c(10, 9, 8, 7, 6, 5)     # Steady decline continues
+  p6 <- rep(3, full_horizon)     # Stable low value
   
 } else {
   stop(paste("Invalid 'benefit_scenario' specified:", benefit_scenario,
@@ -51,13 +44,16 @@ if (benefit_scenario == "constant") {
 
 
 # --- Common Code to Finalize Matrices (for both scenarios) ---
+# --- Common Code to Split and Finalize Matrices ---
 
-# Build the benefit matrix M
-dataR = rbind(p1,p2,p3,p4,p5,p6)
-M <- matrix(nrow=init_site, ncol=time_step, data=dataR)
+# 1. Create a matrix with the full benefit data for all 6 time steps
+dataR_full <- rbind(p1,p2,p3,p4,p5,p6)
 
-# Terminal benefit is the value at the final time step
-dataRT <- M[, time_step]
+# 2. The main benefit matrix 'M' uses only the first 5 time steps
+M <- dataR_full[, 1:time_step]
+
+# 3. The terminal benefit 'term' is the value from the 6th time step
+dataRT <- dataR_full[, full_horizon]
 term <- matrix(dataRT, nrow = init_site, ncol = 1)
 
 # Conversion probability matrix Pj (kept constant for this example)
