@@ -13,7 +13,7 @@ library(MDPtoolbox)
 library(graphics)
 library(dplyr)
 source('mdp_finite_horizon_nonStationary.r')
-source('mdp_myopic_policy_nonStationary.r')
+source('greedy_solver.r')
 source('mdp_myopic_forward_look_policy.R')
 source('mdp_example_PPR_non_stationary.r')
 source('explore_solution_PPR.r')
@@ -30,7 +30,7 @@ source('getState.r')
 # Set this variable to control the input data.
 # Options: "constant" or "variable"
 #
-benefit_scenario <- "variable"
+benefit_scenario <- "constant"
 
 toyPB = TRUE
 # CAREFULL when using getState(), the id of the state returned should get +1 (starts at 0)
@@ -86,22 +86,22 @@ sim_runs_optimal <- lapply(1:1000, function(i) {
 
 
 #########################################################
-# BUILD & SOLVE Myopic Model #
+# BUILD & SOLVE Greedy Algorithm #
 #########################################################
 
-## Solve the myopic algorithm
-results_myopic <- mdp_myopic_policy_nonStationary(P, R, 1, time_step, h)
-policy_myopic <- results_myopic$policy; head(policy_myopic)
+## Solve the greedy algorithm
+results_greedy <- mdp_greedy_policy_nonStationary(M, P, R, 1, time_step, h, init_site)
+policy_greedy <- results_greedy$policy; head(policy_greedy)
 
 
 ## Explore solution
-sim_myopic <- explore_solution_PPR(numeric(init_site), policy_myopic, M, P, R,h)
-sim_myopic$Treward
-sim_myopic$Tsites
+sim_greedy <- explore_solution_PPR(numeric(init_site), policy_greedy, M, P, R,h)
+sim_greedy$Treward
+sim_greedy$Tsites
 
 # Run the simulation 1000 times and collect sim$Treward from each run
-sim_runs_myopic <- lapply(1:1000, function(i) {
-  sim <- explore_solution_PPR(numeric(init_site), policy_myopic, M, P, R, h)
+sim_runs_greedy <- lapply(1:1000, function(i) {
+  sim <- explore_solution_PPR(numeric(init_site), policy_greedy, M, P, R, h)
   sim$Treward
 })
 
@@ -130,13 +130,73 @@ sim_runs_fl_myopic <- lapply(1:1000, function(i) {
 
 
 ########### COMPARE AND STORE RESULTS #########
+
+# --- 1. PROCESS SIMULATION RESULTS ---
+# Extract the vector of 1000 terminal rewards for each model
+terminal_rewards_optimal <- do.call(rbind, sim_runs_optimal)[, ncol(M) + 1]
+terminal_rewards_greedy <- do.call(rbind, sim_runs_greedy)[, ncol(M) + 1]
+terminal_rewards_fl_myopic <- do.call(rbind, sim_runs_fl_myopic)[, ncol(M) + 1]
+
+
+# --- 2. CREATE AND SAVE THE RAW DATA TABLE ---
+# This is the key step for creating distribution plots later.
+# We combine all raw results into a single "long-format" dataframe.
+raw_results_table <- bind_rows(
+  data.frame(TerminalReward = terminal_rewards_optimal, Model = "optimal"),
+  data.frame(TerminalReward = terminal_rewards_greedy,  Model = "greedy"),
+  data.frame(TerminalReward = terminal_rewards_fl_myopic, Model = "fl_myopic")
+)
+
+# Define the dynamic filename for the raw results
+raw_output_filename <- paste0("raw_simulation_results_", benefit_scenario, ".csv")
+
+# Save the raw data to a new CSV file
+write.csv(raw_results_table, raw_output_filename, row.names = FALSE)
+cat("\nRaw simulation data saved to:", raw_output_filename, "\n")
+
+
+# --- 3. CREATE AND SAVE THE SUMMARY TABLE (as before) ---
+# Create the summary dataframe
+results_sum <- raw_results_table %>%
+  group_by(Model) %>%
+  summarise(
+    mean_r = round(mean(TerminalReward), 2),
+    sd_r = round(sd(TerminalReward), 2)
+  ) %>%
+  mutate(data_scenario = benefit_scenario) # Add scenario info
+
+# Define the dynamic name for the summary object and file
+dynamic_name_summary <- paste0("results_sum_", benefit_scenario)
+
+# Assign to a dynamically named object and save to CSV
+assign(dynamic_name_summary, results_sum)
+write.csv(results_sum, paste0(dynamic_name_summary, ".csv"), row.names = FALSE)
+cat("Summary statistics saved to:", paste0(dynamic_name_summary, ".csv"), "\n")
+
+# Print the contents of the newly created summary object
+cat("\n--- Final Summary Table (`", dynamic_name_summary, "`) ---\n", sep="")
+print(get(dynamic_name_summary))
+cat("---------------------------------------------\n")
+
+
+
+
+
+
+
+
+
+
+
+
+########### COMPARE AND STORE RESULTS #########
 # First, process the simulation results to get terminal rewards
 # Optimal
 sim_matrix_optimal <- do.call(rbind, sim_runs_optimal)
 terminal_rewards_optimal <- sim_matrix_optimal[, ncol(sim_matrix_optimal)]
-#Myopic
-sim_matrix_myopic <- do.call(rbind, sim_runs_myopic)
-terminal_rewards_myopic <- sim_matrix_myopic[, ncol(sim_matrix_myopic)]
+#Greedy
+sim_matrix_greedy <- do.call(rbind, sim_runs_greedy)
+terminal_rewards_greedy <- sim_matrix_greedy[, ncol(sim_matrix_greedy)]
 #FL Myopic
 sim_matrix_fl_myopic <- do.call(rbind, sim_runs_fl_myopic)
 terminal_rewards_fl_myopic <- sim_matrix_fl_myopic[, ncol(sim_matrix_fl_myopic)]
@@ -145,18 +205,18 @@ terminal_rewards_fl_myopic <- sim_matrix_fl_myopic[, ncol(sim_matrix_fl_myopic)]
 #Print
 cat("---- Comparison Results ----\n")
 cat("Optimal Mean Reward:", mean(terminal_rewards_optimal), " | SD:", sd(terminal_rewards_optimal), "\n")
-cat("Myopic Mean Reward: ", mean(terminal_rewards_myopic), " | SD:", sd(terminal_rewards_myopic), "\n")
+cat("Greedy Mean Reward: ", mean(terminal_rewards_greedy), " | SD:", sd(terminal_rewards_greedy), "\n")
 cat("FL Myopic Mean Reward: ", mean(terminal_rewards_fl_myopic), " | SD:", sd(terminal_rewards_fl_myopic), "\n")
 
 #histogram
 par(mfrow=c(3,1))
 hist(terminal_rewards_optimal, main="Optimal Policy Terminal Rewards")
-hist(terminal_rewards_myopic, main="Myopic Policy Terminal Rewards")
+hist(terminal_rewards_greedy, main="Greedy Policy Terminal Rewards")
 hist(terminal_rewards_fl_myopic, main="FL Myopic Policy Terminal Rewards")
 par(mfrow=c(1,1))
 
 # Save into dataframe
-results_sum <- data.frame(scenario=c("optimal", "myopic", "fl myopic"), 
+results_sum <- data.frame(scenario=c("optimal", "greedy", "fl myopic"), 
                           mean_r= NA, 
                           sd_r=NA)
 
@@ -164,13 +224,13 @@ results_sum <- results_sum %>%
   mutate(
     mean_r = case_when(
       scenario == "optimal" ~ round(mean(terminal_rewards_optimal), 2),
-      scenario == "myopic" ~ round(mean(terminal_rewards_myopic), 2),
+      scenario == "greedy" ~ round(mean(terminal_rewards_greedy), 2),
       scenario == "fl myopic"  ~ round(mean(terminal_rewards_fl_myopic), 2),
       TRUE ~ mean_r
     ),
     sd_r = case_when(
       scenario == "optimal" ~ round(sd(terminal_rewards_optimal), 2),
-      scenario == "myopic"  ~ round(sd(terminal_rewards_myopic), 2),
+      scenario == "greedy"  ~ round(sd(terminal_rewards_greedy), 2),
       scenario == "fl myopic"  ~ round(sd(terminal_rewards_fl_myopic), 2),
       TRUE ~ sd_r
     )
