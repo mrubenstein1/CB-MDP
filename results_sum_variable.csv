@@ -1,4 +1,4 @@
-"","scenario","mean_r","sd_r"
-"1","optimal",230.12,19.39
-"2","myopic",194.74,39.01
-"3","fl myopic",215.57,34.72
+"Model","mean_r","sd_r","data_scenario"
+"fl_myopic",164.82,23.89,"variable"
+"greedy",161.37,28.7,"variable"
+"optimal",173.42,14.95,"variable"
