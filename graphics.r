@@ -27,12 +27,12 @@ data_to_plot <- raw_variable %>%
   mutate(
     # Create cleaner, more descriptive names for the plot legend
     Model = case_when(
-      Model == "optimal"   ~ "Optimal MDP",
-      Model == "greedy"    ~ "Greedy Solver",
-      Model == "fl_myopic" ~ "Forward-Looking Myopic"
+      Model == "optimal"   ~ "Non-stationary MDP",
+      Model == "greedy"    ~ "Greedy Heuristic",
+      Model == "fl_myopic" ~ "Myopic MDP"
     ),
     # Convert 'Model' to a factor to control the order in the plots.
-    Model = factor(Model, levels = c("Optimal MDP", "Forward-Looking Myopic", "Greedy Solver"))
+    Model = factor(Model, levels = c("Non-stationary MDP", "Myopic MDP", "Greedy Heuristic"))
   )
 
 
