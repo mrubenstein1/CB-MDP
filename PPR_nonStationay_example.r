@@ -131,33 +131,31 @@ sim_runs_fl_myopic <- lapply(1:1000, function(i) {
 ########### COMPARE AND STORE RESULTS #########
 
 # --- 1. PROCESS SIMULATION RESULTS ---
-# Extract the vector of 1000 terminal rewards for each model
+# Extract 1000 terminal rewards for each model
 terminal_rewards_optimal <- do.call(rbind, sim_runs_optimal)[, ncol(M) + 1]
 terminal_rewards_greedy <- do.call(rbind, sim_runs_greedy)[, ncol(M) + 1]
 terminal_rewards_fl_myopic <- do.call(rbind, sim_runs_fl_myopic)[, ncol(M) + 1]
 
 # --- 2. PERFORM STATISTICAL TESTS ---
-# We will use Welch's two-sample t-test, which is robust and does not assume
-# equal variances between the two groups being compared.
+# Two-sample t-test
 
-# Compare the Greedy model's results against the Optimal model's results
+# Greedy vs. non-stationary MDP
 ttest_vs_greedy <- t.test(terminal_rewards_optimal, terminal_rewards_greedy)
 
-# Compare the Forward-Looking Myopic model's results against the Optimal model
+# Myopic MDP vs Greedy
 ttest_vs_fl_myopic <- t.test(terminal_rewards_optimal, terminal_rewards_fl_myopic)
 
 
 
 # --- 2. CREATE AND SAVE THE RAW DATA TABLE ---
-# This is the key step for creating distribution plots later.
-# We combine all raw results into a single "long-format" dataframe.
+#combine all raw results into a single dataframe.
 raw_results_table <- bind_rows(
   data.frame(TerminalReward = terminal_rewards_optimal, Model = "optimal"),
   data.frame(TerminalReward = terminal_rewards_greedy,  Model = "greedy"),
   data.frame(TerminalReward = terminal_rewards_fl_myopic, Model = "fl_myopic")
 )
 
-# Define the dynamic filename for the raw results
+# Save into csv w/ dynamic file name
 raw_output_filename <- paste0("raw_simulation_results_", benefit_scenario, ".csv")
 
 # Save the raw data to a new CSV file
@@ -165,7 +163,7 @@ write.csv(raw_results_table, raw_output_filename, row.names = FALSE)
 cat("\nRaw simulation data saved to:", raw_output_filename, "\n")
 
 
-# --- 3. CREATE AND SAVE THE SUMMARY TABLE (as before) ---
+# --- 3. CREATE AND SAVE THE SUMMARY TABLE ---
 
 summary_stats <- raw_results_table %>%
   group_by(Model) %>%
@@ -174,10 +172,10 @@ summary_stats <- raw_results_table %>%
     sd_r = sd(TerminalReward)
   )
 
-# Get the mean of the optimal model, which will be our baseline for comparison
+# Mean of MDP nonstationary (baseline)
 mean_optimal <- summary_stats$mean_r[summary_stats$Model == "optimal"]
 
-# Now, build the final table, adding the difference and p-value
+# Calculate difference in mean between MDP optimal/greedy/FL Myopic
 results_sum_enhanced <- summary_stats %>%
   mutate(
     # Add a column for the difference from the optimal model's mean reward
