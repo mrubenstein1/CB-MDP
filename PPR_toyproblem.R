@@ -1,13 +1,10 @@
 # --- BENEFITS: PARCEL VALUES OVER TIME ---
 
-
-#test this too
-
-
 # This script reads a variable 'benefit_scenario' from the main script
 # to determine which benefit matrix (M) to generate. This version defines
-# all time step values at once, according to scenarios, then separates tiem steps 1:5 from the
-# terminal value (term). This is done to align with structure of explore_solution_PPR & other scripts.
+# all time step values at once, according to scenarios, then separates time steps 1:5 from the
+# terminal value (term). 
+    #This helps to align with structure of explore_solution_PPR & other scripts.
 
 # Common parameters for both scenarios
 init_site <- 6
@@ -54,6 +51,8 @@ if (benefit_scenario == "constant") {
   #P3: Stable, mid-range value
   p3_val <- sample(3:5, 1)
   p3 <- rep(p3_val, full_horizon)
+  
+  round(p3_val + sin(time_points))
   
   #P4: Rises slowly then descends
   p4 <- round(-0.6 * (time_points - 3.5)^2 + 8)

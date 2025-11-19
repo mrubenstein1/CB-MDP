@@ -1,7 +1,7 @@
 # Filename: mdp_myopic_forward_look_policy.R
 #
 # Computes a "forward-looking" myopic policy for a non-stationary MDP.
-#
+
 # This policy simulates a decision-maker who, at each time step 't', attempts to
 # plan for the future (from t+1 to H). However, it makes a critical myopic assumption:
 # it believes that the transition probabilities P[,,,t] and reward structure R[,,t]
@@ -10,12 +10,10 @@
 # The agent performs the following steps at each time 't':
 # 1. Observes the current P and R matrices.
 # 2. Solves a new, stationary, finite-horizon MDP for the remaining time steps (t+1 to H)
-#    using the current matrices as its model for the future.
-# 3. This solution gives it a projected value for being in any state at time t+1.
-# 4. It uses this projected future value to calculate the best action for the current
+#    using the values of the current P and R matrices for all future time steps
+# 3. It uses this projected future value to calculate the best action for the current
 #    time step 't'.
-# 5. It takes that action, time moves forward, and the true P and R for t+1 are revealed,
-#    at which point the entire process repeats.
+# 4. It takes that action, time moves forward, and the true P and R for t+1 are revealed
 #
 # INPUTS:
 # P - The TRUE non-stationary transition probability array [S x S x A x H].

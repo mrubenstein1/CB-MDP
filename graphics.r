@@ -1,22 +1,16 @@
 #########################################################################
-# SCRIPT: Create Publication-Ready Figure for the Variable Scenario
-#
-# DESCRIPTION:
 # This script loads the detailed simulation results for the "variable"
 # benefit scenario and creates a single, combined figure comparing the
 # performance of all three models. The figure includes:
-#   1. A smoothed histogram (density plot) for distribution shape.
-#   2. Horizontal box plots for direct comparison of spread and median.
-# The color palette is selected for clarity and accessibility, suitable
-# for journals like Conservation Biology.
+#   1. Density plot
+#   2. Horizontal box plots for direct comparison of spread and median
 #
 #########################################################################
 
 # --- 1. SETUP ---
-# Load necessary libraries. You may need to install patchwork: install.packages("patchwork")
 library(ggplot2)
 library(dplyr)
-library(patchwork) # For combining plots into a single figure
+library(patchwork)
 
 # --- 2. LOAD AND PREPARE DATA ---
 # Load the raw data from the variable scenario ONLY
@@ -41,8 +35,6 @@ data_to_plot <- raw_variable %>%
 # --- Graphic A: Overlapping Density Plot (Smoothed Histogram) ---
 plot_density <- ggplot(data_to_plot, aes(x = TerminalReward, fill = Model)) +
   geom_density(alpha = 0.8) +
-  # Use a colorblind-safe and professional palette. The 'viridis' family is an excellent choice.
-  # The "_d" stands for "discrete", which is correct for this aesthetic.
   scale_fill_viridis_d(option = "cividis") +
   labs(
     title = "Overall Distribution of Outcomes",
@@ -69,11 +61,6 @@ plot_boxplot_horizontal <- ggplot(data_to_plot, aes(x = Model, y = TerminalRewar
 
 
 # --- 4. COMBINE INTO A SINGLE FIGURE ---
-# The 'patchwork' library allows you to combine plots using intuitive operators.
-# - '/' stacks plots vertically.
-# - plot_layout(guides = 'collect') creates a single, shared legend for the entire figure.
-# - plot_annotation(tag_levels = 'A') automatically labels the panels.
-
 final_figure <- (plot_density / plot_boxplot_horizontal) +
   plot_layout(guides = 'collect')
 

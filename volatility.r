@@ -12,7 +12,7 @@ library(MDPtoolbox)
 library(dplyr)
 library(ggplot2)
 library(patchwork) 
-library(tidyr) # <<< FIX 1: Added library(tidyr) to load pivot_longer()
+library(tidyr) # 
 
 # Source all the required model and helper functions
 source('mdp_finite_horizon_nonStationary.r')
@@ -47,12 +47,15 @@ for (v in volatility_levels) {
   time_step <- 5
   set.seed(42) # Ensure reproducibility
   
-  p1 <- c(15 + 5*v, 10, 5, 2, 1) 
-  p2 <- c(1, 2, 5 + 3*v, 10 + 6*v, 15 + 9*v) 
-  p3 <- rep(8, 5)
-  p4 <- c(10, 9, 8, 7, 6)
-  p5 <- c(5, 6, 7, 6, 5)
-  p6 <- rep(3, 5)
+  v <- .5
+  p1 <- c(15 + 5*v, 10, 5, 2, 1) #start out much higher, then decline
+  p2 <- c(1, 2, 5 + 3*v, 10 + 6*v, 15 + 9*v) #increase much faster
+  p3_val <- sample(3:5, 1)
+  p3 <- round(p3_val + sin(time_points+1)) #introduce sin wave instability
+  p4 <- c(10, 9, 8, 7, 6, 3)
+  p5 <- c(5, 6, 7, 6, 5, 4)
+  p6 <- sample(3:5, 1)
+  p6 <- round(p6_val + sin(time_points+1))
   
   dataR <- rbind(p1, p2, p3, p4, p5, p6)
   M <- matrix(nrow=init_site, ncol=time_step, data=dataR)

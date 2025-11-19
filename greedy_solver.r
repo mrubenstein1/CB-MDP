@@ -1,5 +1,4 @@
-# Filename: greedy solver.r
-#
+
 # Computes a true greedy policy for the PPR problem.
 # This policy ignores the R matrix and instead selects the available action (parcel)
 # that has the highest individual benefit M[a, t] at each state and time.
