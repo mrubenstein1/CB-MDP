@@ -30,7 +30,7 @@ source('getState.r')
 # Set this variable to control the input data.
 # Options: "constant" or "variable"
 #
-benefit_scenario <- "constant"
+benefit_scenario <- "variable"
 
 toyPB = TRUE
 # CAREFULL when using getState(), the id of the state returned should get +1 (starts at 0)
