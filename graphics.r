@@ -35,7 +35,11 @@ data_to_plot <- raw_variable %>%
 # --- Graphic A: Overlapping Density Plot (Smoothed Histogram) ---
 plot_density <- ggplot(data_to_plot, aes(x = TerminalReward, fill = Model)) +
   geom_density(alpha = 0.8) +
-  scale_fill_viridis_d(option = "cividis") +
+  
+  # UPDATE: Added 'begin' and 'end' to lighten the colors
+  # 'begin = 0.3' skips the darkest blues, ensuring better visibility
+  scale_fill_viridis_d(option = "cividis", begin = 0.3, end = 0.95) +
+  
   labs(
     title = "Overall Distribution of Outcomes",
     x = "Final Cumulative Reward",
@@ -46,15 +50,19 @@ plot_density <- ggplot(data_to_plot, aes(x = TerminalReward, fill = Model)) +
 
 # --- Graphic B: Horizontal Box Plots on a Shared Axis ---
 plot_boxplot_horizontal <- ggplot(data_to_plot, aes(x = Model, y = TerminalReward, fill = Model)) +
-  geom_boxplot() +
+  
+  # UPDATE: Added alpha = 0.7 to make the fill semi-transparent
+  # This makes the black median line stand out clearly against the color
+  geom_boxplot(alpha = 0.7) +
+  
   coord_flip() +
   
-  # Use the same professional color palette to ensure consistency
-  scale_fill_viridis_d(option = "cividis") +
+  # UPDATE: Matches the density plot colors exactly
+  scale_fill_viridis_d(option = "cividis", begin = 0.3, end = 0.95) +
   
   labs(
     title = "Summary of Reward Distributions",
-    x = "", # The vertical axis is categorical, so its label is not needed
+    x = "", 
     y = "Final Cumulative Reward"
   ) +
   theme_minimal(base_size = 14)
