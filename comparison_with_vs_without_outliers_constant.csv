@@ -1,0 +1,4 @@
+"Model","Mean_With_Outliers","Mean_No_Outliers","SD_With_Outliers","SD_No_Outliers","DiffFromOptimal_With_Outliers","DiffFromOptimal_No_Outliers","PValue_With_Outliers","PValue_No_Outliers"
+"myopic",164.6,166.07,17.27,14.93,-0.4,-0.28,"0.604","0.68"
+"greedy",164.93,166.41,17.04,14.67,-0.72,-0.63,"0.347","0.351"
+"optimal",164.2,165.79,17.39,14.93,0,0,"--","--"

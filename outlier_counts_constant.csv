@@ -1,0 +1,4 @@
+"Model","TotalN","RemovedOutliers","RemainingN"
+"optimal",1000,29,971
+"greedy",1000,27,973
+"fl_myopic",1000,26,974

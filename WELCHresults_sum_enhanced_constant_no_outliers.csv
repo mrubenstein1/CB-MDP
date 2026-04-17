@@ -1,0 +1,4 @@
+"Model","MeanReward","StDev","DifferenceFromOptimal","Significance","OmnibusPValue","Scenario"
+"fl_myopic",166.07,14.93,-0.28,"0.911",0.65,"constant"
+"greedy",166.41,14.67,-0.63,"0.62",0.65,"constant"
+"optimal",165.79,14.93,0,"--",0.65,"constant"
