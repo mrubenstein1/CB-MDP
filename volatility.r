@@ -122,86 +122,80 @@ for (v in volatility_levels) {
   mean_fl_myopic <- mean(r_myo)
   mean_greedy <- mean(r_grd)
   
-  # --- STATISTICAL TESTS (t-test) ---
-  # The t.test object contains the Confidence Interval for the DIFFERENCE in means
-  test_myopic <- t.test(r_opt, r_myo)
-  test_greedy <- t.test(r_opt, r_grd)
+  # --- STATISTICAL TEST: Use Welch's ANOVA and games howell post hoc tests  ---
+  raw_results <- bind_rows(
+    data.frame(TerminalReward = r_opt, Model = "optimal"),
+    data.frame(TerminalReward = r_myo, Model = "fl_myopic"),
+    data.frame(TerminalReward = r_grd, Model = "greedy")
+  )
+  
+  # Welch ANOVA
+  welch_anova <- oneway.test(TerminalReward ~ Model, data = raw_results, var.equal = FALSE)
+  
+  # Games-Howell post-hoc (requires rstatix)
+  posthoc_gh <- raw_results %>% games_howell_test(TerminalReward ~ Model, detailed = TRUE)
+  
+  # Extract key results
+  p_opt_myo <- posthoc_gh %>% 
+    filter((group1 == "optimal" & group2 == "fl_myopic") | 
+             (group1 == "fl_myopic" & group2 == "optimal")) %>% 
+    pull(p.adj)
+  
+  p_opt_grd <- posthoc_gh %>% 
+    filter((group1 == "optimal" & group2 == "greedy") | 
+             (group1 == "greedy" & group2 == "optimal")) %>% 
+    pull(p.adj)
   
   current_results <- data.frame(
     Volatility = v,
-    MeanReward_Optimal = mean_optimal,
-    MeanReward_FLMyopic = mean_fl_myopic,
-    MeanReward_Greedy = mean_greedy,
+    MeanReward_Optimal = mean(r_opt),
+    MeanReward_FLMyopic = mean(r_myo),
+    MeanReward_Greedy = mean(r_grd),
     
-    # Store raw p-values
-    P_Val_vs_Myopic = test_myopic$p.value,
-    P_Val_vs_Greedy = test_greedy$p.value,
+    # NEW: Proper 3-group inference
+    Welch_F = welch_anova$statistic["F"],
+    Welch_P = welch_anova$p.value,
+    P_Val_vs_Myopic = p_opt_myo,
+    P_Val_vs_Greedy = p_opt_grd,
     
-    # Store 95% Confidence Intervals for the Difference
-    CI_Myo_Lower = test_myopic$conf.int[1],
-    CI_Myo_Upper = test_myopic$conf.int[2],
-    CI_Grd_Lower = test_greedy$conf.int[1],
-    CI_Grd_Upper = test_greedy$conf.int[2]
+    # Keep your existing CI logic
+    CI_Myo_Lower = t.test(r_opt, r_myo)$conf.int[1],
+    CI_Myo_Upper = t.test(r_opt, r_myo)$conf.int[2],
+    CI_Grd_Lower = t.test(r_opt, r_grd)$conf.int[1],
+    CI_Grd_Upper = t.test(r_opt, r_grd)$conf.int[2]
+    
   )
   
   experiment_results <- rbind(experiment_results, current_results)
 }
 
-cat("\n--- Experiment Complete ---\n")
+table_opt_vs_myopic <- experiment_results %>%
+  mutate(CI_vs_Myopic = paste0("[", round(CI_Myo_Lower, 3), ", ", round(CI_Myo_Upper, 3), "]")) %>%
+  select(Volatility,
+         MeanReward_Optimal, MeanReward_FLMyopic,
+         Welch_F, Welch_P,
+         P_Val_vs_Myopic,
+         CI_vs_Myopic,
+         Diff_Means_Myopic, Pct_Imp_vs_Myopic)
 
-# --- 4. POST-PROCESSING: CALCULATE DIFFS & PERCENT IMPROVEMENT ---
+write.csv(table_opt_vs_myopic, "Table5a_opt_myo.csv", row.names = F)
 
-# We perform the calculations here and save them back to 'experiment_results'
-experiment_results <- experiment_results %>%
-  mutate(
-    # 1. Absolute Difference in Means (Optimal - Other)
-    Diff_Means_Myopic = MeanReward_Optimal - MeanReward_FLMyopic,
-    Diff_Means_Greedy = MeanReward_Optimal - MeanReward_Greedy,
-    
-    # 2. Percent Improvement ((Optimal - Other) / Other) * 100
-    Pct_Imp_vs_Myopic = ((MeanReward_Optimal - MeanReward_FLMyopic) / MeanReward_FLMyopic) * 100,
-    Pct_Imp_vs_Greedy = ((MeanReward_Optimal - MeanReward_Greedy) / MeanReward_Greedy) * 100
-  )
+table_opt_vs_greedy <- experiment_results %>%
+  mutate(CI_vs_Greedy = paste0("[", round(CI_Grd_Lower, 3), ", ", round(CI_Grd_Upper, 3), "]")) %>%
+  select(Volatility,
+         MeanReward_Optimal, MeanReward_Greedy,
+         Welch_F, Welch_P,
+         P_Val_vs_Greedy,
+         CI_vs_Greedy,
+         Diff_Means_Greedy, Pct_Imp_vs_Greedy)
 
-# Helper function to format significance stars
-format_sig <- function(p) {
-  ifelse(p < 0.001, "***",
-         ifelse(p < 0.01, "**",
-                ifelse(p < 0.05, "*", "ns")))
-}
 
-# Create Display Table (just formatting the columns that now exist in experiment_results)
-display_table <- experiment_results %>%
-  mutate(
-    Sig_vs_Myopic = format_sig(P_Val_vs_Myopic),
-    Sig_vs_Greedy = format_sig(P_Val_vs_Greedy),
-    
-    # Format CI as string
-    CI_95_Diff_Myopic = paste0("[", round(CI_Myo_Lower, 2), ", ", round(CI_Myo_Upper, 2), "]"),
-    CI_95_Diff_Greedy = paste0("[", round(CI_Grd_Lower, 2), ", ", round(CI_Grd_Upper, 2), "]")
-  ) %>%
-  select(
-    Volatility,
-    Mean_Opt = MeanReward_Optimal,
-    
-    # Comparisons vs Myopic
-    Diff_vs_Myo = Diff_Means_Myopic, # Now referencing the column in experiment_results
-    CI_Diff_Myo = CI_95_Diff_Myopic,
-    Imp_vs_Myo_Pct = Pct_Imp_vs_Myopic,
-    Sig_vs_Myo = Sig_vs_Myopic,
-    
-    # Comparisons vs Greedy
-    Diff_vs_Grd = Diff_Means_Greedy, # Now referencing the column in experiment_results
-    CI_Diff_Grd = CI_95_Diff_Greedy,
-    Imp_vs_Grd_Pct = Pct_Imp_vs_Greedy,
-    Sig_vs_Grd = Sig_vs_Greedy
-  ) %>%
-  mutate(across(where(is.numeric), round, 2))
+write.csv(table_opt_vs_greedy, "Table5b_opt_greedy.csv", row.names = F)
 
-cat("\n--- FINAL SUMMARY: PERFORMANCE, SIGNIFICANCE & CONFIDENCE INTERVALS ---\n")
-print(display_table)
-# Verify the columns are in the main object
-# print(names(experiment_results))
+
+
+
+
 
 
 # --- 5. VISUALIZE THE RESULTS ---
@@ -269,53 +263,3 @@ format_p_val <- function(p) {
   ifelse(p < 0.001, "< 0.001", as.character(round(p, 4)))
 }
 
-# --- TABLE 1: OPTIMAL vs. MYOPIC ---
-table_opt_vs_myopic <- experiment_results %>%
-  mutate(
-    # Create concatenated CI string
-    Confidence_Interval = paste0("(", round(CI_Myo_Lower, 2), ", ", round(CI_Myo_Upper, 2), ")"),
-    # Format P-value
-    P_Value_Str = format_p_val(P_Val_vs_Myopic)
-  ) %>%
-  select(
-    Volatility,
-    Mean_Reward_Optimal = MeanReward_Optimal,
-    Mean_Reward_Myopic = MeanReward_FLMyopic,
-    Abs_Diff_Means = Diff_Means_Myopic,
-    Confidence_Interval,
-    Pct_Improvement = Pct_Imp_vs_Myopic,
-    P_Value = P_Value_Str
-  ) %>%
-  mutate(across(where(is.numeric), round, 2)) # Round numeric columns
-
-# --- TABLE 2: OPTIMAL vs. GREEDY ---
-table_opt_vs_greedy <- experiment_results %>%
-  mutate(
-    # Create concatenated CI string
-    Confidence_Interval = paste0("(", round(CI_Grd_Lower, 2), ", ", round(CI_Grd_Upper, 2), ")"),
-    # Format P-value
-    P_Value_Str = format_p_val(P_Val_vs_Greedy)
-  ) %>%
-  select(
-    Volatility,
-    Mean_Reward_Optimal = MeanReward_Optimal,
-    Mean_Reward_Greedy = MeanReward_Greedy,
-    Abs_Diff_Means = Diff_Means_Greedy,
-    Confidence_Interval,
-    Pct_Improvement = Pct_Imp_vs_Greedy,
-    P_Value = P_Value_Str
-  ) %>%
-  mutate(across(where(is.numeric), round, 2)) # Round numeric columns
-
-# --- PRINT TABLES ---
-cat("\n=======================================================\n")
-cat("TABLE 1: Optimal Non-Stationary vs. Myopic Forward-Look\n")
-cat("=======================================================\n")
-print(table_opt_vs_myopic)
-write.csv(table_opt_vs_myopic, "Table5b_opt_myo.csv")
-
-cat("\n\n=======================================================\n")
-cat("TABLE 2: Optimal Non-Stationary vs. Greedy Heuristic\n")
-cat("=======================================================\n")
-print(table_opt_vs_greedy)
-write.csv(table_opt_vs_greedy, "Table5a_opt_greedy.csv")
