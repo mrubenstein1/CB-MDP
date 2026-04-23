@@ -12,6 +12,7 @@ library(ggplot2)
 library(dplyr)
 library(patchwork)
 
+
 # --- 2. LOAD AND PREPARE DATA ---
 # Load the raw data from the variable scenario ONLY
 raw_variable <- read.csv("raw_simulation_results_variable.csv")
