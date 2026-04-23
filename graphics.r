@@ -11,22 +11,19 @@
 library(ggplot2)
 library(dplyr)
 library(patchwork)
+library(ggokabeito)  # Color-blind safe palette
 
 
 # --- 2. LOAD AND PREPARE DATA ---
-# Load the raw data from the variable scenario ONLY
 raw_variable <- read.csv("raw_simulation_results_variable.csv")
 
-# Prepare the data for plotting
 data_to_plot <- raw_variable %>%
   mutate(
-    # Create cleaner, more descriptive names for the plot legend
     Model = case_when(
       Model == "optimal"   ~ "Non-stationary MDP",
       Model == "greedy"    ~ "Greedy Heuristic",
       Model == "fl_myopic" ~ "Myopic MDP"
     ),
-    # Convert 'Model' to a factor to control the order in the plots.
     Model = factor(Model, levels = c("Non-stationary MDP", "Myopic MDP", "Greedy Heuristic"))
   )
 
@@ -36,44 +33,32 @@ data_to_plot <- raw_variable %>%
 # --- Graphic A: Overlapping Density Plot (Smoothed Histogram) ---
 plot_density <- ggplot(data_to_plot, aes(x = TerminalReward, fill = Model)) +
   geom_density(alpha = 0.8) +
-  
-  # UPDATE: Added 'begin' and 'end' to lighten the colors
-  # 'begin = 0.3' skips the darkest blues, ensuring better visibility
-  scale_fill_viridis_d(option = "cividis", begin = 0.3, end = 0.95) +
-  
+  scale_fill_manual(values = palette_okabe_ito(order = c(2, 3, 6))) +
   labs(
     title = "Overall Distribution of Outcomes",
     x = "Final Cumulative Reward",
     y = "Density"
   ) +
-  theme_minimal(base_size = 14)
+  theme_minimal(base_size = 14, base_family = "serif")
 
 
 # --- Graphic B: Horizontal Box Plots on a Shared Axis ---
 plot_boxplot_horizontal <- ggplot(data_to_plot, aes(x = Model, y = TerminalReward, fill = Model)) +
-  
-  # UPDATE: Added alpha = 0.7 to make the fill semi-transparent
-  # This makes the black median line stand out clearly against the color
   geom_boxplot(alpha = 0.7) +
-  
   coord_flip() +
-  
-  # UPDATE: Matches the density plot colors exactly
-  scale_fill_viridis_d(option = "cividis", begin = 0.3, end = 0.95) +
-  
+  scale_fill_manual(values = palette_okabe_ito(order = c(2, 3, 6))) +
   labs(
     title = "Summary of Reward Distributions",
-    x = "", 
+    x = "",
     y = "Final Cumulative Reward"
   ) +
-  theme_minimal(base_size = 14)
+  theme_minimal(base_size = 14, base_family = "serif")
 
 
 # --- 4. COMBINE INTO A SINGLE FIGURE ---
 final_figure <- (plot_density / plot_boxplot_horizontal) +
   plot_layout(guides = 'collect')
 
-# Print the final, combined figure
 print(final_figure)
 
 
@@ -82,9 +67,9 @@ print(final_figure)
 ####### RE-DO USING TERMINAL REWARDS WITHOUT OUTLIERS ########
 library(dplyr)
 library(ggplot2)
-library(viridis)
 library(patchwork)
 library(ggpubr)
+library(ggokabeito)  # Color-blind safe palette
 
 # --- 1. LOAD AND PREPARE DATA ---
 raw_variable <- read.csv("raw_simulation_results_variable_no_outliers.csv")
@@ -133,17 +118,17 @@ anno_df <- data.frame(
 
 plot_density <- ggplot(data_to_plot, aes(x = TerminalReward, fill = Model)) +
   geom_density(alpha = 0.8) +
-  scale_fill_viridis_d(option = "cividis", begin = 0.3, end = 0.95) +
+  scale_fill_manual(values = palette_okabe_ito(order = c(2, 3, 6))) +
   labs(
     title = "Overall Distribution of Outcomes",
     x = "Final Cumulative Reward",
     y = "Density"
   ) +
-  theme_minimal(base_size = 14)
+  theme_minimal(base_size = 14, base_family = "serif")
 
 plot_boxplot_horizontal <- ggplot(data_to_plot, aes(x = Model, y = TerminalReward, fill = Model)) +
   geom_boxplot(alpha = 0.7, width = 0.65) +
-  scale_fill_viridis_d(option = "cividis", begin = 0.3, end = 0.95) +
+  scale_fill_manual(values = palette_okabe_ito(order = c(2, 3, 6))) +
   geom_bracket(
     data = anno_df,
     aes(
@@ -163,7 +148,7 @@ plot_boxplot_horizontal <- ggplot(data_to_plot, aes(x = Model, y = TerminalRewar
     y = "Final Cumulative Reward"
   ) +
   coord_flip(clip = "off") +
-  theme_minimal(base_size = 14) +
+  theme_minimal(base_size = 14, base_family = "serif") +
   theme(
     plot.margin = margin(10, 35, 10, 10)
   )
