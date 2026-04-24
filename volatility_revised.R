@@ -257,7 +257,7 @@ p_performance <- ggplot(results_long, aes(x = Volatility, y = MeanReward, color 
   labs(
     title = "Comparative Model Performance (Raw Value)",
     x     = "Volatility Factor",
-    y     = "Mean Terminal Reward"
+    y     = "Mean Cumulative Reward"
   ) +
   scale_color_manual(values = c(
     "Optimal"  = palette_okabe_ito(order = 2),
