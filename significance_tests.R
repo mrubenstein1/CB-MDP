@@ -1,6 +1,6 @@
-#### SIGNIFICANCE TESTS FOR DISTRIBUTION OF TERMINAL REWARDS#####
+#### SIGNIFICANCE TESTS FOR DISTRIBUTION OF CUMULATIVE REWARDS#####
 
-# This script performs statistical tests to assess whether the terminal rewards, 
+# This script performs statistical tests to assess whether the cumulative rewards, 
   # as calculated by the three different models (optimal, myopic, greedy), 
   # are significantly different from one another. 
 
@@ -226,7 +226,7 @@ cat("----------------------------------------------------------\n")
 ##### ANOVA #########
 ## Assess significance of difference using ANOVA
 # First assess whether the variance is equal and terminal rewards are normally distributed
-# NOTE: this analysis uses only the raw results with outliers removed ("raw_results_table_clean")
+# NOTE: this analysis uses only raw results with outliers removed ("raw_results_table_clean")
 
 ####1. Residual Plots ####
 

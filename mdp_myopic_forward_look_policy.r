@@ -7,7 +7,7 @@
 # it believes that the transition probabilities P[,,,t] and reward structure R[,,t]
 # from the current time step 't' will remain stationary for all future time steps.
 #
-# The agent performs the following steps at each time 't':
+# The decision-maker performs the following steps at each time 't':
 # 1. Observes the current P and R matrices.
 # 2. Solves a new, stationary, finite-horizon MDP for the remaining time steps (t+1 to H)
 #    using the values of the current P and R matrices for all future time steps
@@ -44,13 +44,11 @@ mdp_myopic_forward_look_policy <- function(P, R, discount, H, h) {
     
     # --- Myopic Forward-Look Step ---
     # The agent at time 'i' assumes the world is stationary, based on
-    # the conditions at 'i'. We now calculate the expected future value function
-    # under this flawed assumption.
+    # the conditions at 'i'. calculate the expected future value function under this flawed assumption.
     P_stationary <- P[,,,i]
     R_stationary <- R[,,i]
     
     # V_future_proj represents the value-to-go from the NEXT step (i+1) onwards,
-    # as projected by the myopic agent at time 'i'.
     # Initialize with the known terminal rewards.
     V_future_proj <- h
     
@@ -71,11 +69,11 @@ mdp_myopic_forward_look_policy <- function(P, R, discount, H, h) {
         V_future_proj <- apply(q_values_proj, 1, max)
       }
     }
-    # At the end of this loop, V_future_proj holds the agent's calculated value
+    # At the end of this loop, V_future_proj holds decision-maker's calculated value
     # of being in any state at time i+1.
     
     # --- Decision Step ---
-    # Now, use this projected future value to make the actual decision for time 'i'.
+    # Use projected future value to make aquisition decision for time 'i'.
     for (s in 1:S) {
       q_values_real <- numeric(A)
       for (a in 1:A) {

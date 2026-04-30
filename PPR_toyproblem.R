@@ -1,10 +1,12 @@
-# --- BENEFITS: PARCEL VALUES OVER TIME ---
+#########################################################################
+#Time-dependent decisions under non-stationarity: applications to the land acquisition problem ####
+#########################################################################
 
-# This script reads a variable 'benefit_scenario' from the main script
-# to determine which benefit matrix (M) to generate. This version defines
-# all time step values at once, according to scenarios, then separates time steps 1:5 from the
-# terminal value (term). 
-    #This helps to align with structure of explore_solution_PPR & other scripts.
+
+# Set initial parameters for model comparison
+# Note: This script reads a variable 'benefit_scenario' from 'the script'PPR_nonStationary_example.r'
+  # the benefit scenario must be defined before this script is operational
+
 
 # Common parameters for both scenarios
 init_site <- 6
@@ -38,6 +40,7 @@ if (benefit_scenario == "constant") {
 } else if (benefit_scenario == "variable") {
   
   # --- Scenario 2: VARIABLE BENEFIT ---
+  #define plausible trajectories for each of the 6 land parcels
   set.seed(42)
   time_points <- 1:full_horizon
   

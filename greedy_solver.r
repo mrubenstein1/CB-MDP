@@ -2,20 +2,7 @@
 # Computes a true greedy policy for the PPR problem.
 # This policy ignores the R matrix and instead selects the available action (parcel)
 # that has the highest individual benefit M[a, t] at each state and time.
-#
-# INPUTS:
-# M      - The Benefit array [J x H]. This is the information the greedy agent uses.
-# P      - UNSUSED but included for compatibility.
-# R      - UNSUSED but included for compatibility.
-# discount - UNSUSED but included for compatibility.
-# H      - The planning horizon (number of time steps).
-# h      - UNSUSED but included for compatibility.
-# J      - The number of sites.
-#
-# OUTPUTS:
-# A list containing:
-# policy - An [S x H] matrix where policy[s, t] is the greedy action for state s at time t.
-# V      - A placeholder matrix for compatibility.
+
 
 mdp_greedy_policy_nonStationary <- function(M, P, R, discount, H, h, J) {
   

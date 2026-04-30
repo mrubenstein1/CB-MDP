@@ -1,6 +1,5 @@
 #########################################################################
-# This script loads the detailed simulation results for the "variable"
-# benefit scenario and creates a single, combined figure comparing the
+# This script loads the detailed simulation results and creates a single, combined figure comparing the
 # performance of all three models. The figure includes:
 #   1. Density plot
 #   2. Horizontal box plots for direct comparison of spread and median

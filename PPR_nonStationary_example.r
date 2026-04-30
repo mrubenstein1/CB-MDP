@@ -1,5 +1,5 @@
 #########################################################################
-# RESERVE EXAMPLE####
+#Time-dependent decisions under non-stationarity: applications to the land acquisition problem ####
 #########################################################################
 
 
