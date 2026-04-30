@@ -89,5 +89,6 @@ non-stationarity, time-dependent decisions, climate change, cognitive biases, in
 
 This work was conducted as a part of the “Markov decision processes in 
 non-autonomous socio-ecological systems” Working Group supported by the 
-John Wesley Powell Center for Analysis and Synthesis, funded by the U.S. Geological Survey.
+John Wesley Powell Center for Analysis and Synthesis, funded by the U.S. Geological Survey. 
+Support was also provided by the National Climate Adaptation Science Center
 
